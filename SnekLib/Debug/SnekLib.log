@@ -1,2 +1,6 @@
-﻿  Source.cpp
-  SnekLib.vcxproj -> D:\work\Snek\SnekLib\Debug\SnekLib.exe
+﻿  Board.cpp
+  Snek.cpp
+  SnekGame.cpp
+  Source.cpp
+  Generating Code...
+  SnekLib.vcxproj -> D:\work\WHS\Snek-git\Snek\SnekLib\Debug\SnekLib.exe

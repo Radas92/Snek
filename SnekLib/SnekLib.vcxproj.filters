@@ -13,15 +13,90 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\AIs">
+      <UniqueIdentifier>{d01bc49e-b319-41c4-b617-b2ff5aaad3ba}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="SnekGame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Source.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Snek.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Board.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="SnekGame.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="View.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Snek.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Misc.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Board.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SnekAI_Dummy.h">
+      <Filter>Source Files\AIs</Filter>
+    </ClInclude>
+    <ClInclude Include="SnekAI_Human.h">
+      <Filter>Source Files\AIs</Filter>
+    </ClInclude>
+    <ClInclude Include="SnekAI_PSmrcek_LSuk.h">
+      <Filter>Source Files\AIs</Filter>
+    </ClInclude>
+    <ClInclude Include="SnekAI_GMolnar_ASporka.h">
+      <Filter>Source Files\AIs</Filter>
+    </ClInclude>
+    <ClInclude Include="SnekAI_MMarko_LHosek.h">
+      <Filter>Source Files\AIs</Filter>
+    </ClInclude>
+    <ClInclude Include="SnekAI_MLabut_RKrenek.h">
+      <Filter>Source Files\AIs</Filter>
+    </ClInclude>
+    <ClInclude Include="SnekAI_PMan_MSourek.h">
+      <Filter>Source Files\AIs</Filter>
+    </ClInclude>
+    <ClInclude Include="SnekAI_PNohejl_MMatous.h">
+      <Filter>Source Files\AIs</Filter>
+    </ClInclude>
+    <ClInclude Include="SnekAI_TBarak_MJarolimek.h">
+      <Filter>Source Files\AIs</Filter>
+    </ClInclude>
+    <ClInclude Include="SnekAI_TGrunwald_DMikes.h">
+      <Filter>Source Files\AIs</Filter>
+    </ClInclude>
+    <ClInclude Include="SnekAI_TJanak_MKlima.h">
+      <Filter>Source Files\AIs</Filter>
+    </ClInclude>
+    <ClInclude Include="SnekAI_TVahalik_RSevcik.h">
+      <Filter>Source Files\AIs</Filter>
+    </ClInclude>
+    <ClInclude Include="SnekAI_JFormanek_VPetrov.h">
+      <Filter>Source Files\AIs</Filter>
+    </ClInclude>
+    <ClInclude Include="BatchUpdater.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AIProvider.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Teams.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DummyAi.h">
+      <Filter>Source Files\AIs</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
