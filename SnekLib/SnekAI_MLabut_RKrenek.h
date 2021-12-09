@@ -17,7 +17,7 @@ struct SnekAI_MLabut_RKrenek : public SnekAI
 			void Set(Dir dir) { data = data ^ (1 << dir); }
 		};
 
-	//None, Left, Right, Up, Down
+		//None, Left, Right, Up, Down
 		static Coord Shift(Coord coord, Dir dir)
 		{
 			static int x[] = {0, -1, 1, 0, 0};
@@ -34,31 +34,47 @@ struct SnekAI_MLabut_RKrenek : public SnekAI
 			return flipped[dir];
 		}
 
-		struct MyBoard
+		struct BoardWrapper
 		{
 			const Board& board;
-			MyBoard(const Board& board) : board(board) {}
+			BoardWrapper(const Board& board) : board(board) {}
 
 			bool ValidateDirection(const Snek& snek, Coord newPos)
 			{
 				if (!const_cast<Board&>(board).IsWithinBounds(newPos))
 					return false;
 
-				for( auto& snek : board.Sneks )
+				for (auto& snek : board.Sneks)
 				{
-					for( auto& bodyCoord : snek->Body)
+					for (auto& bodyCoord : snek->Body)
 					{
-						if (bodyCoord == newPos)
+						if (bodyCoord.x == newPos.x && bodyCoord.y == newPos.y)
 							return false;
 					}
 				}
+
 				return true;
 			}
+
+			int GetDirectionPossibleSteps(const Snek& snek, const Coord& coord, const Dir& direction)
+			{
+				auto actualCoord = Shift(coord, direction);
+
+				int possibleSteps = 0;
+				while (ValidateDirection(snek, actualCoord))
+				{
+					++possibleSteps;
+					actualCoord = Shift(actualCoord, direction);
+				}
+
+				return possibleSteps;
+			}
+
 
 			Dirs StepDirections(const Snek& snek, std::vector<Dir> myMoves)
 			{
 				Dirs dirs;
-				for( Dir dir : {Left, Right, Up, Down} )
+				for (Dir dir : {Left, Right, Up, Down})
 				{
 					Coord newPos = Shift(snek.Body[0], dir);
 
@@ -69,103 +85,108 @@ struct SnekAI_MLabut_RKrenek : public SnekAI
 				}
 				return dirs;
 			}
-
-			struct Node
-			{
-				std::vector<Dir> dirs;
-
-				Coord finalCoord;
-				uint16_t penalty;
-				const Node* parent;
-
-				Node(const Snek& snek, const Board& board, const Node* parent, const std::vector<Dir>& dirs) : dirs(dirs), parent(parent)
-				{
-					finalCoord = snek.Body[0];
-					for (auto dir : dirs)
-					{
-						finalCoord = Shift(finalCoord, dir);
-					}
-					auto it = std::min_element(board.Treats.begin(), board.Treats.end(),
-						[&](Treat t1, Treat t2) { return t1.Coord.ManhattanDist(finalCoord) < t2.Coord.ManhattanDist(finalCoord); });
-
-					penalty = it->Coord.ManhattanDist(finalCoord);
-				}
-
-				bool operator <(const Node& second) const
-				{
-					return penalty < second.penalty;
-				}
-
-				Node(const Node& other) = default;
-				Node(Node&& other) noexcept = default;
-				Node& operator=(const Node& other) = default;
-				Node& operator=(Node&& other) noexcept = default;
-
-				/*static bool Compare(const Node& first, const Node& second)
-				{
-					return first.penalty < second.penalty;
-				}*/
-			};
-
-			std::vector<Dir> Greedy(const Snek& snek)
-			{
-				std::priority_queue< std::shared_ptr<Node> > openList;
-				openList.emplace( std::make_shared<Node>(snek, board, nullptr, std::vector<Dir>()) );
-
-				std::shared_ptr<Node> best = openList.top();
-
-				int numSteps = 150;
-				while( numSteps-- > 0 && !openList.empty() )
-				{
-					auto current = openList.top();
-					openList.pop();
-
-					if (best->penalty > current->penalty)
-						best = current;
-
-					auto dirs = StepDirections(snek, current->dirs);
-					for (Dir dir : {Left, Right, Up, Down})
-					{
-						if(dirs.Has(dir))
-						{
-							std::vector<Dir> newDirs(current->dirs);
-							newDirs.emplace_back(dir);
-							openList.emplace( std::make_shared<Node>(snek, board, &*current, newDirs) );
-						}
-					}
-				}
-
-				return best->dirs;
-			}
 		};
-
-		
 
 		void Step(const Board& board, const Snek& snek, Dir& moveRequest, bool& boost) override
 		{
-			MyBoard myBoard(board);
-
-			auto pred = myBoard.Greedy(snek);
-
-			/*Dirs possible = myBoard.StepDirections(snek, {});
-
+			BoardWrapper myBoard(board);
 			Coord head = snek.Body[0];
+
+			Dir bestDirection = Left;
+			int bestDirectionPossibleSteps = myBoard.GetDirectionPossibleSteps(snek, head, Left);
+
+			int possibleStepsRight = myBoard.GetDirectionPossibleSteps(snek, head, Right);
+			if (possibleStepsRight > bestDirectionPossibleSteps)
+			{
+				bestDirectionPossibleSteps = possibleStepsRight;
+				bestDirection = Right;
+			}
+
+			int possibleStepsUp = myBoard.GetDirectionPossibleSteps(snek, head, Up);
+			if (possibleStepsUp > bestDirectionPossibleSteps)
+			{
+				bestDirectionPossibleSteps = possibleStepsUp;
+				bestDirection = Up;
+			}
+
+			int possibleStepsDown = myBoard.GetDirectionPossibleSteps(snek, head, Down);
+			if (possibleStepsDown > bestDirectionPossibleSteps)
+			{
+				bestDirectionPossibleSteps = possibleStepsDown;
+				bestDirection = Down;
+			}
+
+
+			const int directionPenalty = 100 + snek.Body.size();
 			auto it = std::min_element(board.Treats.begin(), board.Treats.end(),
-				[&](Treat t1, Treat t2) { return t1.Coord.ManhattanDist(head) < t2.Coord.ManhattanDist(head); }); //noice
+				[&](Treat t1, Treat t2) 
+				{ 
+					auto t1distance = t1.Coord.ManhattanDist(head); 
+
+					switch (bestDirection)
+					{
+					case Left:
+					{
+						if (t1.Coord.x > head.x)
+						{
+							t1distance += directionPenalty;
+						}
+						break;
+					}
+					case Right:
+					{
+						if (t1.Coord.x < head.x)
+						{
+							t1distance += directionPenalty;
+						}
+						break;
+					}
+					case Up:
+					{
+						if (t1.Coord.y > head.y)
+						{
+							t1distance += directionPenalty;
+						}
+						break;
+					}
+					case Down:
+					{
+						if (t1.Coord.y < head.y)
+						{
+							t1distance += directionPenalty;
+						}
+						break;
+					}
+					}
+
+					return t1distance < t2.Coord.ManhattanDist(head);
+				});
+
 			Coord favorite = it->Coord;
 
+			Dirs possible = myBoard.StepDirections(snek, {});
 
+			if (head.x > favorite.x && bestDirection == Left) moveRequest = Left;
+			else if (head.x < favorite.x && bestDirection == Right) moveRequest = Right;
+			else if (head.y > favorite.y && bestDirection == Up) moveRequest = Up;
+			else if (head.y < favorite.y && bestDirection == Down) moveRequest = Down;
 
-			if (head.x > favorite.x && possible.Has(Left)) moveRequest = Left;
+			else if (head.x > favorite.x && possible.Has(Left)) moveRequest = Left;
 			else if (head.x < favorite.x && possible.Has(Right)) moveRequest = Right;
 			else if (head.y > favorite.y && possible.Has(Up)) moveRequest = Up;
 			else if (head.y < favorite.y && possible.Has(Down)) moveRequest = Down;
-			else std::cout << "CANT MOVE";
 
-			//DummyStep(board, snek, moveRequest, boost);*/
-			if (pred.size() > 0)
-				moveRequest = pred[0];
-			else
-				std::cout << "NO valid move";
+			// Cannot go to favorite direction
+			else 
+			{
+				if (possible.Has(bestDirection)) moveRequest = bestDirection;
+				else if (possible.Has(Left)) moveRequest = Left;
+				else if (possible.Has(Right)) moveRequest = Right;
+				else if (possible.Has(Up)) moveRequest = Up;
+				else if (possible.Has(Down)) moveRequest = Down;
+			}
 		}
+
+
+		
 };
